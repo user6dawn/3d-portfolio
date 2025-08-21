@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -16,63 +15,36 @@ export function ContactForm() {
   })
 
   const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null)
-  const [isPending, setIsPending] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleEmailClick = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const { name, email, subject, message } = formData
-
-    if (!name || !email || !subject || !message) {
-      setFeedback({
-        success: false,
-        message: "Please fill in all fields before sending.",
-      })
-      return
-    }
-
-    // Build email content
-    const body = `Hello,\n\nMy name is ${name}.\n\n${message}\n\nYou can reach me at: ${email}`
-
-    // Detect if mobile
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-
-    if (isMobile) {
-      // Open Gmail compose page in browser/app
-      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=salihusaeed2712@gmail.com&su=${encodeURIComponent(
-        subject
-      )}&body=${encodeURIComponent(body)}`
-      window.open(gmailUrl, "_blank")
-      setFeedback({
-        success: true,
-        message: "Opening Gmail compose...",
-      })
-    } else {
-      // Fallback for desktop (mailto)
-      const mailtoLink = `mailto:salihusaeed2712@gmail.com?subject=${encodeURIComponent(
-        subject
-      )}&body=${encodeURIComponent(body)}`
-      window.location.href = mailtoLink
-      setFeedback({
-        success: true,
-        message: "Opening your email app...",
-      })
-    }
+  const getMailtoLink = () => {
+    return `mailto:salihusaeed2712@gmail.com?subject=${encodeURIComponent(
+      formData.subject || "New Inquiry"
+    )}&body=${encodeURIComponent(
+      `Hi, my name is ${formData.name} (${formData.email}).\n\n${formData.message}`
+    )}`
   }
 
-  const handleDirectEmail = async () => {
+  const getGmailLink = () => {
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=salihusaeed2712@gmail.com&su=${encodeURIComponent(
+      formData.subject || "New Inquiry"
+    )}&body=${encodeURIComponent(
+      `Hi, my name is ${formData.name} (${formData.email}).\n\n${formData.message}`
+    )}`
+  }
+
+  const handleCopyEmail = async () => {
     try {
       await navigator.clipboard.writeText("salihusaeed2712@gmail.com")
       setFeedback({
         success: true,
         message: "Email address copied to clipboard!",
       })
-    } catch (err) {
+    } catch {
       setFeedback({
         success: false,
         message: "Failed to copy email. Please try manually.",
@@ -81,7 +53,7 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleEmailClick} className="space-y-4 md:space-y-6 bg-gray-900 p-4 md:p-6 rounded-lg">
+    <form className="space-y-4 md:space-y-6 bg-gray-900 p-4 md:p-6 rounded-lg">
       <div className="space-y-1 md:space-y-2">
         <Label htmlFor="name" className="text-sm md:text-base">
           Your name
@@ -159,28 +131,31 @@ export function ContactForm() {
       )}
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="flex-1 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 h-10 md:h-11 text-sm md:text-base"
+        <a
+          href={getMailtoLink()}
+          className="flex-1 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 h-10 md:h-11 text-white text-sm md:text-base text-center flex items-center justify-center rounded-md"
         >
-          {isPending ? "Sending..." : "Get in touch"}
-        </Button>
+          Open Mail App
+        </a>
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleDirectEmail}
-          className="flex-1 border-gray-700 hover:bg-gray-800 h-10 md:h-11 text-sm md:text-base bg-transparent"
+        <a
+          href={getGmailLink()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 border border-gray-700 hover:bg-gray-800 h-10 md:h-11 text-sm md:text-base text-center flex items-center justify-center rounded-md"
         >
           <Mail className="mr-2 h-4 w-4" />
-          Get Email
-        </Button>
+          Open Gmail
+        </a>
       </div>
 
-      <p className="text-xs text-gray-500 text-center">
-        Having trouble with the form? Contact me directly at salihusaeed2712@gmail.com
-      </p>
+      <button
+        type="button"
+        onClick={handleCopyEmail}
+        className="w-full text-xs text-gray-500 hover:underline mt-2"
+      >
+        Copy email address instead
+      </button>
     </form>
   )
 }
