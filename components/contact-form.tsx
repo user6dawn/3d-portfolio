@@ -130,12 +130,12 @@ export function ContactForm() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 p-2">
         <a
           href={getMailtoLink()}
           className="flex-1 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 h-10 md:h-11 text-white text-sm md:text-base text-center flex items-center justify-center rounded-md"
         >
-          Open Mail App
+          Open Gmail App
         </a>
 
         <a
@@ -145,7 +145,7 @@ export function ContactForm() {
           className="flex-1 border border-gray-700 hover:bg-gray-800 h-10 md:h-11 text-sm md:text-base text-center flex items-center justify-center rounded-md"
         >
           <Mail className="mr-2 h-4 w-4" />
-          Open Gmail
+          Open On Web
         </a>
       </div>
 
