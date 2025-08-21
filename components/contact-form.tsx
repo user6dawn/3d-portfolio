@@ -16,13 +16,16 @@ export function ContactForm() {
   })
 
   const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null)
+  const [isPending, setIsPending] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleEmailClick = () => {
+  const handleEmailClick = (e: React.FormEvent) => {
+    e.preventDefault()
+
     const { name, email, subject, message } = formData
 
     if (!name || !email || !subject || !message) {
@@ -33,25 +36,33 @@ export function ContactForm() {
       return
     }
 
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=salihusaeed2712@gmail.com&su=${encodeURIComponent(
-      subject || "Project inquiry"
-    )}&body=${encodeURIComponent(
-      `Hello,\n\nMy name is ${name}.\n\n${message}\n\nYou can reach me at: ${email}`
-    )}`
+    // Build email content
+    const body = `Hello,\n\nMy name is ${name}.\n\n${message}\n\nYou can reach me at: ${email}`
 
-    window.open(gmailUrl, "_blank") // opens Gmail in a new tab
-    setFeedback({
-      success: true,
-      message: "Opening Gmail in a new tab...",
-    })
+    // Detect if mobile
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 
-    // Reset form after sending
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-    })
+    if (isMobile) {
+      // Open Gmail compose page in browser/app
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=salihusaeed2712@gmail.com&su=${encodeURIComponent(
+        subject
+      )}&body=${encodeURIComponent(body)}`
+      window.open(gmailUrl, "_blank")
+      setFeedback({
+        success: true,
+        message: "Opening Gmail compose...",
+      })
+    } else {
+      // Fallback for desktop (mailto)
+      const mailtoLink = `mailto:salihusaeed2712@gmail.com?subject=${encodeURIComponent(
+        subject
+      )}&body=${encodeURIComponent(body)}`
+      window.location.href = mailtoLink
+      setFeedback({
+        success: true,
+        message: "Opening your email app...",
+      })
+    }
   }
 
   const handleDirectEmail = async () => {
@@ -70,7 +81,7 @@ export function ContactForm() {
   }
 
   return (
-    <form className="space-y-4 md:space-y-6 bg-gray-900 p-4 md:p-6 rounded-lg">
+    <form onSubmit={handleEmailClick} className="space-y-4 md:space-y-6 bg-gray-900 p-4 md:p-6 rounded-lg">
       <div className="space-y-1 md:space-y-2">
         <Label htmlFor="name" className="text-sm md:text-base">
           Your name
@@ -149,11 +160,11 @@ export function ContactForm() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Button
-          type="button"
-          onClick={handleEmailClick}
+          type="submit"
+          disabled={isPending}
           className="flex-1 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 h-10 md:h-11 text-sm md:text-base"
         >
-          Get in touch
+          {isPending ? "Sending..." : "Get in touch"}
         </Button>
 
         <Button
